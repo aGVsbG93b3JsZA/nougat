@@ -13,7 +13,7 @@ from operator import itemgetter
 import re
 from typing import Dict, List, Tuple, Union, Optional
 import os
-import pypdf
+import fitz  # pymupdf
 from unidecode import unidecode
 import Levenshtein
 
@@ -260,7 +260,7 @@ def split_markdown(
     Returns:
         Tuple[List[str], Dict]: The list of Markdown paragraphs and the metadata.
     """
-    pdf = pypdf.PdfReader(pdf_file)
+    pdf = fitz.open(pdf_file)
     doc_paragraphs_full: List[str] = doc.split("\n")
     doc_paragraph_lengths = [len(p) for p in doc_paragraphs_full if len(p) > 1]
     num_lines = 1 + int(doc_paragraph_chars / np.mean(doc_paragraph_lengths))
@@ -277,7 +277,7 @@ def split_markdown(
             )
             doc_paragraph_indices.append(i)
     meta = {"pdffigures": figure_info}
-    if len(pdf.pages) > 1:
+    if len(pdf) > 1:
         pdf_text = get_doc_text(pdf_file, True, True, minlen)
         pdf_content = [
             [unicode_to_latex(q).replace("\n", " ") for q in p if len(q) >= minlen]
@@ -371,7 +371,7 @@ def split_markdown(
                     delta=delta,
                 )
             )
-    elif len(pdf.pages) == 1:  # single page
+    elif len(pdf) == 1:  # single page
         pages = [(0, 0, 1)]
     else:
         return
@@ -399,7 +399,7 @@ def split_markdown(
 
     meta["page_splits"] = pages
     meta["page_scores"] = page_scores
-    meta["num_pages"] = len(pdf.pages)
+    meta["num_pages"] = len(pdf)
 
     # Reintroduce figures, tables and footnotes
     figure_tex = list(doc_fig.keys()), list(doc_fig.values())
@@ -453,7 +453,7 @@ if __name__ == "__main__":
     parser.add_argument("--dpi", type=int, default=96)
     args = parser.parse_args()
     md = open(args.md, "r", encoding="utf-8").read().replace("\xa0", " ")
-    pdf = pypdf.PdfReader(args.pdf)
+    pdf = fitz.open(args.pdf)
     try:
         fig_info = json.load(open(args.figure, "r", encoding="utf-8"))
     except FileNotFoundError:

@@ -20,7 +20,7 @@ from nougat.utils.dataset import LazyDataset
 from nougat.utils.device import move_to_device, default_batch_size
 from nougat.utils.checkpoint import get_checkpoint
 from nougat.postprocessing import markdown_compatible
-import pypdf
+import fitz  # pymupdf
 
 logging.basicConfig(level=logging.INFO)
 
@@ -147,7 +147,7 @@ def main():
                 partial(model.encoder.prepare_input, random_padding=False),
                 args.pages,
             )
-        except pypdf.errors.PdfStreamError:
+        except fitz.FileDataError:
             logging.info(f"Could not load file {str(pdf)}.")
             continue
         datasets.append(dataset)

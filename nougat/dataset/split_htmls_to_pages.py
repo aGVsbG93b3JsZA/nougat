@@ -14,7 +14,7 @@ from typing import Tuple
 import os
 from pathlib import Path
 import logging
-import pypdf
+import fitz  # pymupdf
 from PIL import Image
 import pytesseract
 from nougat.dataset.split_md_to_pages import *
@@ -49,8 +49,8 @@ def process_paper(
     total_pages = 0
     num_recognized_pages = 0
     try:
-        pdf = pypdf.PdfReader(pdf_file)
-        total_pages = len(pdf.pages)
+        pdf = fitz.open(pdf_file)
+        total_pages = len(pdf)
         outpath: Path = args.out / fname
         # skip this paper if already processed
         dirs_with_same_stem = list(args.out.glob(fname.partition("v")[0] + "*"))

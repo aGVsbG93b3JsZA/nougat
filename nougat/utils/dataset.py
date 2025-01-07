@@ -15,7 +15,7 @@ from PIL import Image, UnidentifiedImageError
 from typing import List, Optional
 
 import torch
-import pypdf
+import fitz  # pymupdf
 import orjson
 from torch.utils.data import Dataset
 from transformers.modeling_utils import PreTrainedModel
@@ -86,7 +86,7 @@ class LazyDataset(Dataset):
         self.name = str(pdf)
         self.init_fn = partial(rasterize_paper, pdf, pages=pages)
         self.dataset = None
-        self.size = len(pypdf.PdfReader(pdf).pages) if pages is None else len(pages)
+        self.size = len(fitz.open(pdf)) if pages is None else len(pages)
 
     def __len__(self):
         return self.size
